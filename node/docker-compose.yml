@@ -1,30 +1,35 @@
 # Hello application
 app:
-  build: .
+  build: app
   ports:
     - 8000
   environment:
     SERVICE_NAME: app
-    CONSUL_URL: 10.0.2.15:8500
-    FILECONSUL_PREFIX: app
-    FILECONSUL_BASEPATH: /app/config
+#    CONSUL_URL: 10.0.2.15:8500
+    CONSUL_URL: localhost:8500
+  net: host
 
 # Nginx Load Balancer
 lb:
-  image: 1science/nginx:consul
+  build: lb
   ports:
     - 80:80
   volumes:
     - ./lb/etc/consul-template:/etc/consul-template
   environment:
     SERVICE_NAME: load-balancer
-    # Change this variable to point on your Consul
-    CONSUL_URL: 10.0.2.15:8500
+#    CONSUL_URL: 10.0.2.15:8500
+    CONSUL_URL: localhost:8500
+  net: host
 
 # Registrator to register on local Consul
-registrator:
-  image: gliderlabs/registrator:latest
-  volumes:
-    - /var/run/docker.sock:/tmp/docker.sock
-  # Change the command to point on your Consul
-  command: consul://10.0.2.15:8500
+# Note : When we stop the containers, registrator might be closed before the others containers
+# which implies to keep services instances in Consul (inconsistent state)
+#registrator:
+#  image: gliderlabs/registrator:latest
+#  volumes:
+#    - /var/run/docker.sock:/tmp/docker.sock
+#  # Change the command to point on your Consul
+##  command: consul://10.0.2.15:8500
+#  command: consul://localhost:8500
+#  net: host
